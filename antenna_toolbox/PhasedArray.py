@@ -27,7 +27,7 @@ class RectangularAntenna:
             -self.Ny / 2, self.Ny / 2, self.Ny
         )
 
-        self.elements_y, self.elements_x = np.meshgrid(self._y, self._x)
+        self.elements_x, self.elements_y = np.meshgrid(self._x, self._y)
 
         self.ampl_distribution = None
 
@@ -139,3 +139,33 @@ class RectangularAntenna:
     def k(self):
         """Волновое число"""
         return 2 * np.pi / self.wavelength
+
+
+class HexagonalAntenna(RectangularAntenna):
+    def __init__(self, a: float, b: float, ddelta: float, freq):
+        """
+
+        :param a: Размер антенны по оси X
+        :param b: Размер антенны по оси Y
+        :param ddelta: Расстояние между элементами
+        :param freq: Резонансная частота
+        """
+
+        ratio = np.sqrt(3) / 2
+        dx = ddelta
+        dy = ratio * ddelta
+
+        self.ddelta = ddelta
+
+        super().__init__(a, b, dx, dy, freq)
+
+        # self.elements_x[::2, :] *= ratio
+        self.elements_x[::2, :] += self.ddelta / 2
+
+    @property
+    def Nx(self) -> int:
+        """Число элементов по оси X
+
+        :rtype: float
+        """
+        return int(self.a // self.ddelta)

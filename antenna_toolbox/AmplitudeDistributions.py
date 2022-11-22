@@ -2,9 +2,9 @@ import numpy as np
 import numpy.typing as npt
 
 
-def ampl_distribution(t: float, a: float):
+def ampl_distribution(tx: float, ty: float, a: float, b: float):
     def wrapped(x: npt.NDArray, y: npt.NDArray):
-        return (t + (1 - t) * np.cos(np.pi * x / a)) * (
-                t + (1 - t) * np.cos(np.pi * y / a)
+        return (tx + (1 - tx) * np.cos(np.pi * x / a)) * (
+                ty + (1 - ty) * np.cos(np.pi * y / b)
         )
     return wrapped
