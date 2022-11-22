@@ -165,14 +165,6 @@ class HexagonalAntenna(RectangularAntenna):
         # self.elements_x[::2, :] *= ratio
         self.elements_x[::2, :] += self.ddelta / 2
 
-    @property
-    def Nx(self) -> int:
-        """Число элементов по оси X
-
-        :rtype: float
-        """
-        return int(self.a // self.ddelta)
-
 
 class HexagonalRoundAntenna(AntennaBase):
     def __init__(self, diameter: float, ddelta: float, freq: float):
@@ -200,11 +192,10 @@ class HexagonalRoundAntenna(AntennaBase):
         self.elements_x = np.array([])
         self.elements_y = np.array([])
 
-        for i in elements_x.flatten():
-            for j in elements_y.flatten():
-                if np.sqrt(i**2 + j**2) <= self.diameter/2:
-                    self.elements_x = np.append(self.elements_x, i)
-                    self.elements_y = np.append(self.elements_y, j)
+        for i in zip(elements_x.flatten(), elements_y.flatten()):
+            if np.sqrt(i**2 + j**2) <= self.diameter/2:
+                self.elements_x = np.append(self.elements_x, i)
+                self.elements_y = np.append(self.elements_y, j)
 
     @property
     def Nx(self) -> int:
