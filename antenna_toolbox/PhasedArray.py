@@ -1,36 +1,11 @@
+from abc import ABC
 from collections.abc import Iterable
 import numpy as np
 import numpy.typing as npt
 import typing
 
 
-class RectangularAntenna:
-    def __init__(self, a: float, b: float, dx: float, dy: float, freq: float):
-        """
-
-        :param a: Размер антенны по оси X
-        :param b: Размер антенны по оси Y
-        :param dx: Шаг решетки по оси X
-        :param dy: Шаг решетки по оси Y
-        :param freq: Резонансная частота
-        """
-        self.a = a
-        self.b = b
-        self.dx = dx
-        self.dy = dy
-        self.frequency = freq
-
-        self._x = dx * np.linspace(
-            -self.Nx / 2, self.Nx / 2, self.Nx
-        )
-        self._y = dy * np.linspace(
-            -self.Ny / 2, self.Ny / 2, self.Ny
-        )
-
-        self.elements_x, self.elements_y = np.meshgrid(self._x, self._y)
-
-        self.ampl_distribution = None
-
+class AntennaBase(ABC):
     def phase_distribution(self, theta: float, phi: float) -> npt.NDArray:
         """
 
@@ -141,8 +116,36 @@ class RectangularAntenna:
         return 2 * np.pi / self.wavelength
 
 
+class RectangularAntenna(AntennaBase):
+    def __init__(self, a: float, b: float, dx: float, dy: float, freq: float):
+        """
+
+        :param a: Размер антенны по оси X
+        :param b: Размер антенны по оси Y
+        :param dx: Шаг решетки по оси X
+        :param dy: Шаг решетки по оси Y
+        :param freq: Резонансная частота
+        """
+        self.a = a
+        self.b = b
+        self.dx = dx
+        self.dy = dy
+        self.frequency = freq
+
+        self._x = dx * np.linspace(
+            -self.Nx / 2, self.Nx / 2, self.Nx
+        )
+        self._y = dy * np.linspace(
+            -self.Ny / 2, self.Ny / 2, self.Ny
+        )
+
+        self.elements_x, self.elements_y = np.meshgrid(self._x, self._y)
+
+        self.ampl_distribution = None
+
+
 class HexagonalAntenna(RectangularAntenna):
-    def __init__(self, a: float, b: float, ddelta: float, freq):
+    def __init__(self, a: float, b: float, ddelta: float, freq: float):
         """
 
         :param a: Размер антенны по оси X
@@ -169,3 +172,52 @@ class HexagonalAntenna(RectangularAntenna):
         :rtype: float
         """
         return int(self.a // self.ddelta)
+
+
+class HexagonalRoundAntenna(AntennaBase):
+    def __init__(self, diameter: float, ddelta: float, freq: float):
+        ratio = np.sqrt(3) / 2
+
+        self.dx = ddelta
+        self.dy = ratio * ddelta
+        self.diameter = diameter
+        self.ddelta = ddelta
+        self.frequency = freq
+
+        N = max(self.Nx, self.Ny) + 1
+        self._x = self.dx * np.linspace(-N / 2, N / 2, N)
+        self._y = self.dy * np.linspace(-N / 2, N / 2, N)
+
+        # self.elements_x, self.elements_y = np.meshgrid(self._x, self._y)
+        # self.elements_x[::2, :] += self.ddelta / 2
+        #
+        # self.elements_x = self.elements_x.flatten()
+        # self.elements_y = self.elements_y.flatten()
+
+        elements_x, elements_y = np.meshgrid(self._x, self._y)
+        elements_x[::2, :] += self.ddelta / 2
+
+        self.elements_x = np.array([])
+        self.elements_y = np.array([])
+
+        for i in elements_x.flatten():
+            for j in elements_y.flatten():
+                if np.sqrt(i**2 + j**2) <= self.diameter/2:
+                    self.elements_x = np.append(self.elements_x, i)
+                    self.elements_y = np.append(self.elements_y, j)
+
+    @property
+    def Nx(self) -> int:
+        """Число элементов по оси X
+
+        :rtype: int
+        """
+        return int(np.ceil(self.diameter / (4 * self.ddelta)) * 4)
+
+    @property
+    def Ny(self) -> int:
+        """Число элементов по оси Y
+
+        :rtype: int
+        """
+        return int(np.ceil(self.diameter / (4 * self.dy)) * 4)
