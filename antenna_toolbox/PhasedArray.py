@@ -192,7 +192,7 @@ class HexagonalRoundAntenna(AntennaBase):
         self.elements_x = np.array([])
         self.elements_y = np.array([])
 
-        for i in zip(elements_x.flatten(), elements_y.flatten()):
+        for i, j in zip(elements_x.flatten(), elements_y.flatten()):
             if np.sqrt(i**2 + j**2) <= self.diameter/2:
                 self.elements_x = np.append(self.elements_x, i)
                 self.elements_y = np.append(self.elements_y, j)
