@@ -6,6 +6,15 @@ import typing
 
 
 class AntennaBase(ABC):
+    elements_x: npt.NDArray
+    elements_y: npt.NDArray
+    ampl_distribution: npt.NDArray
+    frequency: float
+    a: float
+    b: float
+    dx: float
+    dy: float
+
     def phase_distribution(self, theta: float, phi: float) -> npt.NDArray:
         """
 
@@ -19,12 +28,12 @@ class AntennaBase(ABC):
 
     def array_factor(
             self,
-            theta: float,
-            phi: float,
+            theta: typing.Union[float, npt.NDArray],
+            phi: typing.Union[float, npt.NDArray],
             pd: npt.NDArray,
             normalize: bool = True,
             log: bool = True,
-    ):
+    ) -> typing.Union[float, npt.NDArray]:
         """Функция, вычисляющая диаграмму направленности в точке (theta, phi)
 
         :param theta: Угол сканирования в плоскости theta
@@ -32,7 +41,7 @@ class AntennaBase(ABC):
         :param pd: Фазовое распределение в антенне
         :param normalize: Нормализовать диаграмму направленности
         :param log: Масштаб в децибелах
-        :return:
+        :return: Значение или массив значений ДН
         """
         F = np.abs(self._af(theta, phi, pd))
         if normalize:
@@ -85,16 +94,19 @@ class AntennaBase(ABC):
     ):
         """Метод, задающий амплитудное распределение
 
-        :param dist: Функция амплитудного распределения, принимающая координаты
-        элементов по оси X и Y
+        :param dist_x: Функция амплитудного распределения, принимающая координаты
+        элементов по оси X
+        :param dist_y: Функция амплитудного распределения, принимающая координаты
+        элементов по оси Y
         """
-        self.ampl_distribution = dist_x(self.elements_x) * dist_y(self.elements_y)
+        self.ampl_distribution = dist_x(
+            self.elements_x) * dist_y(self.elements_y)
 
     @property
     def Nx(self) -> int:
         """Число элементов по оси X
 
-        :rtype: float
+        :rtype: int
         """
         return int(self.a // self.dx)
 
@@ -102,7 +114,7 @@ class AntennaBase(ABC):
     def Ny(self) -> int:
         """Число элементов по оси Y
 
-        :rtype: float
+        :rtype: int
         """
         return int(self.b // self.dy)
 
@@ -118,6 +130,7 @@ class AntennaBase(ABC):
 
 
 class RectangularAntenna(AntennaBase):
+    """Класс антенны с прямоугольной сеткой и прямоугольным раскрывом"""
     def __init__(self, a: float, b: float, dx: float, dy: float, freq: float):
         """
 
@@ -142,10 +155,11 @@ class RectangularAntenna(AntennaBase):
 
         self.elements_x, self.elements_y = np.meshgrid(self._x, self._y)
 
-        self.ampl_distribution = None
+        self.ampl_distribution = np.array([])
 
 
 class HexagonalAntenna(RectangularAntenna):
+    """Класс антенны с гексагональной сеткой и прямоугольным раскрывом"""
     def __init__(self, a: float, b: float, ddelta: float, freq: float):
         """
 
@@ -167,7 +181,23 @@ class HexagonalAntenna(RectangularAntenna):
 
 
 class RectangularRoundAntenna(AntennaBase):
-    def __init__(self, diameter: float, dx: float, dy: float, freq: float, ddelta: float = 0):
+    """Класс антенны с прямоугольной сеткой и круглым раскрывом"""
+    def __init__(
+            self,
+            diameter: float,
+            dx: float,
+            dy: float,
+            freq: float,
+            ddelta: float = 0
+    ):
+        """
+
+        :param diameter: Диаметр раскрыва антенны
+        :param dx: Шаг сетки по оси X
+        :param dy: Шаг сетки по оси Y
+        :param freq: Резонансная частота
+        :param ddelta:
+        """
         self.dx = dx
         self.dy = dy
         self.diameter = diameter
@@ -216,7 +246,14 @@ class RectangularRoundAntenna(AntennaBase):
 
 
 class HexagonalRoundAntenna(RectangularRoundAntenna):
+    """Класс антенны с гексагональной сеткой и круглым раскрывом"""
     def __init__(self, diameter: float, ddelta: float, freq: float):
+        """
+
+        :param diameter: Диаметр раксрыва
+        :param ddelta: Расстояние между элементами
+        :param freq: Резонансная частота
+        """
         ratio = np.sqrt(3) / 2
 
         super().__init__(
