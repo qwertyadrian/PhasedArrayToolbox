@@ -1,35 +1,19 @@
+from abc import ABC
 from collections.abc import Iterable
 import numpy as np
 import numpy.typing as npt
 import typing
 
 
-class RectangularAntenna:
-    def __init__(self, a: float, b: float, dx: float, dy: float, freq: float):
-        """
-
-        :param a: Размер антенны по оси X
-        :param b: Размер антенны по оси Y
-        :param dx: Шаг решетки по оси X
-        :param dy: Шаг решетки по оси Y
-        :param freq: Резонансная частота
-        """
-        self.a = a
-        self.b = b
-        self.dx = dx
-        self.dy = dy
-        self.frequency = freq
-
-        self._x = dx * np.linspace(
-            -self.Nx / 2, self.Nx / 2, self.Nx
-        )
-        self._y = dy * np.linspace(
-            -self.Ny / 2, self.Ny / 2, self.Ny
-        )
-
-        self.elements_x, self.elements_y = np.meshgrid(self._x, self._y)
-
-        self.ampl_distribution = None
+class AntennaBase(ABC):
+    elements_x: npt.NDArray
+    elements_y: npt.NDArray
+    ampl_distribution: npt.NDArray
+    frequency: float
+    a: float
+    b: float
+    dx: float
+    dy: float
 
     def phase_distribution(self, theta: float, phi: float) -> npt.NDArray:
         """
@@ -38,18 +22,20 @@ class RectangularAntenna:
         :param phi: Угол сканирования в градусах в плоскости phi
         :return: Фазовое распределение
         """
-        return -self.k * (
-                self.elements_x * np.cos(phi) + self.elements_y * np.sin(phi)
-        ) * np.sin(theta)
+        return (
+            -self.k
+            * (self.elements_x * np.cos(phi) + self.elements_y * np.sin(phi))
+            * np.sin(theta)
+        )
 
     def array_factor(
-            self,
-            theta: float,
-            phi: float,
-            pd: npt.NDArray,
-            normalize: bool = True,
-            log: bool = True,
-    ):
+        self,
+        theta: typing.Union[float, npt.NDArray],
+        phi: typing.Union[float, npt.NDArray],
+        pd: npt.NDArray,
+        normalize: bool = True,
+        log: bool = True,
+    ) -> typing.Union[float, npt.NDArray]:
         """Функция, вычисляющая диаграмму направленности в точке (theta, phi)
 
         :param theta: Угол сканирования в плоскости theta
@@ -57,7 +43,7 @@ class RectangularAntenna:
         :param pd: Фазовое распределение в антенне
         :param normalize: Нормализовать диаграмму направленности
         :param log: Масштаб в децибелах
-        :return:
+        :return: Значение или массив значений ДН
         """
         F = np.abs(self._af(theta, phi, pd))
         if normalize:
@@ -93,32 +79,37 @@ class RectangularAntenna:
     def __F(self, theta, phi, pd):
         return np.sum(
             np.sum(
-                self.ampl_distribution * np.exp(1j * pd) * np.exp(
-                    1j * self.k * (
-                            self.elements_x * np.cos(phi) +
-                            self.elements_y * np.sin(phi)
-                    ) * np.sin(theta)
+                self.ampl_distribution
+                * np.exp(1j * pd)
+                * np.exp(
+                    1j
+                    * self.k
+                    * (self.elements_x * np.cos(phi) + self.elements_y * np.sin(phi))
+                    * np.sin(theta)
                 ),
                 axis=0,
             )
         )
 
     def set_ampl_distribution(
-            self,
-            dist: typing.Callable[[npt.NDArray, npt.NDArray], npt.NDArray],
+        self,
+        dist_x: typing.Callable[[npt.NDArray], npt.NDArray],
+        dist_y: typing.Callable[[npt.NDArray], npt.NDArray],
     ):
         """Метод, задающий амплитудное распределение
 
-        :param dist: Функция амплитудного распределения, принимающая координаты
-        элементов по оси X и Y
+        :param dist_x: Функция амплитудного распределения, принимающая координаты
+        элементов по оси X
+        :param dist_y: Функция амплитудного распределения, принимающая координаты
+        элементов по оси Y
         """
-        self.ampl_distribution = dist(self.elements_x, self.elements_y)
+        self.ampl_distribution = dist_x(self.elements_x) * dist_y(self.elements_y)
 
     @property
     def Nx(self) -> int:
         """Число элементов по оси X
 
-        :rtype: float
+        :rtype: int
         """
         return int(self.a // self.dx)
 
@@ -126,7 +117,7 @@ class RectangularAntenna:
     def Ny(self) -> int:
         """Число элементов по оси Y
 
-        :rtype: float
+        :rtype: int
         """
         return int(self.b // self.dy)
 
@@ -141,8 +132,36 @@ class RectangularAntenna:
         return 2 * np.pi / self.wavelength
 
 
+class RectangularAntenna(AntennaBase):
+    """Класс антенны с прямоугольной сеткой и прямоугольным раскрывом"""
+
+    def __init__(self, a: float, b: float, dx: float, dy: float, freq: float):
+        """
+
+        :param a: Размер антенны по оси X
+        :param b: Размер антенны по оси Y
+        :param dx: Шаг решетки по оси X
+        :param dy: Шаг решетки по оси Y
+        :param freq: Резонансная частота
+        """
+        self.a = a
+        self.b = b
+        self.dx = dx
+        self.dy = dy
+        self.frequency = freq
+
+        self._x = dx * np.linspace(-self.Nx / 2, self.Nx / 2, self.Nx)
+        self._y = dy * np.linspace(-self.Ny / 2, self.Ny / 2, self.Ny)
+
+        self.elements_x, self.elements_y = np.meshgrid(self._x, self._y)
+
+        self.ampl_distribution = np.array([])
+
+
 class HexagonalAntenna(RectangularAntenna):
-    def __init__(self, a: float, b: float, ddelta: float, freq):
+    """Класс антенны с гексагональной сеткой и прямоугольным раскрывом"""
+
+    def __init__(self, a: float, b: float, ddelta: float, freq: float):
         """
 
         :param a: Размер антенны по оси X
@@ -159,13 +178,89 @@ class HexagonalAntenna(RectangularAntenna):
 
         super().__init__(a, b, dx, dy, freq)
 
-        # self.elements_x[::2, :] *= ratio
         self.elements_x[::2, :] += self.ddelta / 2
+
+
+class RectangularRoundAntenna(AntennaBase):
+    """Класс антенны с прямоугольной сеткой и круглым раскрывом"""
+
+    def __init__(
+        self, diameter: float, dx: float, dy: float, freq: float, ddelta: float = 0
+    ):
+        """
+
+        :param diameter: Диаметр раскрыва антенны
+        :param dx: Шаг сетки по оси X
+        :param dy: Шаг сетки по оси Y
+        :param freq: Резонансная частота
+        :param ddelta:
+        """
+        self.dx = dx
+        self.dy = dy
+        self.diameter = diameter
+        self.ddelta = ddelta
+        self.frequency = freq
+
+        N = max(self.Nx, self.Ny) + 1
+        self._x = self.dx * np.linspace(-N / 2, N / 2, N)
+        self._y = self.dy * np.linspace(-N / 2, N / 2, N)
+
+        elements_x, elements_y = np.meshgrid(self._x, self._y)
+        elements_x[::2, :] += self.ddelta / 2
+
+        self.elements_x = np.array([])
+        self.elements_y = np.array([])
+
+        for i, j in zip(elements_x.flatten(), elements_y.flatten()):
+            if np.sqrt(i**2 + j**2) <= self.diameter / 2:
+                self.elements_x = np.append(self.elements_x, i)
+                self.elements_y = np.append(self.elements_y, j)
+
+    def set_ampl_distribution(self, *args):
+        if len(args) == 1:
+            (dist,) = args
+            self.ampl_distribution = dist(self.elements_x, self.elements_y)
+        elif len(args) == 2:
+            dist_x, dist_y = args
+            self.ampl_distribution = dist_x(self.elements_x) * dist_y(self.elements_y)
 
     @property
     def Nx(self) -> int:
         """Число элементов по оси X
 
-        :rtype: float
+        :rtype: int
         """
-        return int(self.a // self.ddelta)
+        return int(np.ceil(self.diameter / (4 * self.dx)) * 4)
+
+    @property
+    def Ny(self) -> int:
+        """Число элементов по оси Y
+
+        :rtype: int
+        """
+        return int(np.ceil(self.diameter / (4 * self.dy)) * 4)
+
+
+class HexagonalRoundAntenna(RectangularRoundAntenna):
+    """Класс антенны с гексагональной сеткой и круглым раскрывом"""
+
+    def __init__(self, diameter: float, ddelta: float, freq: float):
+        """
+
+        :param diameter: Диаметр раксрыва
+        :param ddelta: Расстояние между элементами
+        :param freq: Резонансная частота
+        """
+        ratio = np.sqrt(3) / 2
+
+        super().__init__(
+            diameter, dx=ddelta, dy=ratio * ddelta, freq=freq, ddelta=ddelta
+        )
+
+    @property
+    def Nx(self) -> int:
+        """Число элементов по оси X
+
+        :rtype: int
+        """
+        return int(np.ceil(self.diameter / (4 * self.ddelta)) * 4)
