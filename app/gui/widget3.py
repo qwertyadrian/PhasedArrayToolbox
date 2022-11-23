@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui_files file 'v3.ui_files'
+# Form implementation generated from reading ui file 'app/ui_files/w3.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.7
 #
@@ -62,4 +62,3 @@ class Ui_Form(object):
         Form.setWindowTitle(_translate("Form", "Form"))
         self.label_2.setText(_translate("Form", "n"))
 from app.resources import resources
-
