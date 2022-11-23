@@ -80,14 +80,15 @@ class AntennaBase(ABC):
 
     def set_ampl_distribution(
             self,
-            dist: typing.Callable[[npt.NDArray, npt.NDArray], npt.NDArray],
+            dist_x: typing.Callable[[npt.NDArray], npt.NDArray],
+            dist_y: typing.Callable[[npt.NDArray], npt.NDArray],
     ):
         """Метод, задающий амплитудное распределение
 
         :param dist: Функция амплитудного распределения, принимающая координаты
         элементов по оси X и Y
         """
-        self.ampl_distribution = dist(self.elements_x, self.elements_y)
+        self.ampl_distribution = dist_x(self.elements_x) * dist_y(self.elements_y)
 
     @property
     def Nx(self) -> int:
