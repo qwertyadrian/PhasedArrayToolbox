@@ -22,17 +22,19 @@ class AntennaBase(ABC):
         :param phi: Угол сканирования в градусах в плоскости phi
         :return: Фазовое распределение
         """
-        return -self.k * (
-                self.elements_x * np.cos(phi) + self.elements_y * np.sin(phi)
-        ) * np.sin(theta)
+        return (
+            -self.k
+            * (self.elements_x * np.cos(phi) + self.elements_y * np.sin(phi))
+            * np.sin(theta)
+        )
 
     def array_factor(
-            self,
-            theta: typing.Union[float, npt.NDArray],
-            phi: typing.Union[float, npt.NDArray],
-            pd: npt.NDArray,
-            normalize: bool = True,
-            log: bool = True,
+        self,
+        theta: typing.Union[float, npt.NDArray],
+        phi: typing.Union[float, npt.NDArray],
+        pd: npt.NDArray,
+        normalize: bool = True,
+        log: bool = True,
     ) -> typing.Union[float, npt.NDArray]:
         """Функция, вычисляющая диаграмму направленности в точке (theta, phi)
 
@@ -77,20 +79,22 @@ class AntennaBase(ABC):
     def __F(self, theta, phi, pd):
         return np.sum(
             np.sum(
-                self.ampl_distribution * np.exp(1j * pd) * np.exp(
-                    1j * self.k * (
-                            self.elements_x * np.cos(phi) +
-                            self.elements_y * np.sin(phi)
-                    ) * np.sin(theta)
+                self.ampl_distribution
+                * np.exp(1j * pd)
+                * np.exp(
+                    1j
+                    * self.k
+                    * (self.elements_x * np.cos(phi) + self.elements_y * np.sin(phi))
+                    * np.sin(theta)
                 ),
                 axis=0,
             )
         )
 
     def set_ampl_distribution(
-            self,
-            dist_x: typing.Callable[[npt.NDArray], npt.NDArray],
-            dist_y: typing.Callable[[npt.NDArray], npt.NDArray],
+        self,
+        dist_x: typing.Callable[[npt.NDArray], npt.NDArray],
+        dist_y: typing.Callable[[npt.NDArray], npt.NDArray],
     ):
         """Метод, задающий амплитудное распределение
 
@@ -99,8 +103,7 @@ class AntennaBase(ABC):
         :param dist_y: Функция амплитудного распределения, принимающая координаты
         элементов по оси Y
         """
-        self.ampl_distribution = dist_x(
-            self.elements_x) * dist_y(self.elements_y)
+        self.ampl_distribution = dist_x(self.elements_x) * dist_y(self.elements_y)
 
     @property
     def Nx(self) -> int:
@@ -131,6 +134,7 @@ class AntennaBase(ABC):
 
 class RectangularAntenna(AntennaBase):
     """Класс антенны с прямоугольной сеткой и прямоугольным раскрывом"""
+
     def __init__(self, a: float, b: float, dx: float, dy: float, freq: float):
         """
 
@@ -146,12 +150,8 @@ class RectangularAntenna(AntennaBase):
         self.dy = dy
         self.frequency = freq
 
-        self._x = dx * np.linspace(
-            -self.Nx / 2, self.Nx / 2, self.Nx
-        )
-        self._y = dy * np.linspace(
-            -self.Ny / 2, self.Ny / 2, self.Ny
-        )
+        self._x = dx * np.linspace(-self.Nx / 2, self.Nx / 2, self.Nx)
+        self._y = dy * np.linspace(-self.Ny / 2, self.Ny / 2, self.Ny)
 
         self.elements_x, self.elements_y = np.meshgrid(self._x, self._y)
 
@@ -160,6 +160,7 @@ class RectangularAntenna(AntennaBase):
 
 class HexagonalAntenna(RectangularAntenna):
     """Класс антенны с гексагональной сеткой и прямоугольным раскрывом"""
+
     def __init__(self, a: float, b: float, ddelta: float, freq: float):
         """
 
@@ -182,13 +183,9 @@ class HexagonalAntenna(RectangularAntenna):
 
 class RectangularRoundAntenna(AntennaBase):
     """Класс антенны с прямоугольной сеткой и круглым раскрывом"""
+
     def __init__(
-            self,
-            diameter: float,
-            dx: float,
-            dy: float,
-            freq: float,
-            ddelta: float = 0
+        self, diameter: float, dx: float, dy: float, freq: float, ddelta: float = 0
     ):
         """
 
@@ -215,18 +212,17 @@ class RectangularRoundAntenna(AntennaBase):
         self.elements_y = np.array([])
 
         for i, j in zip(elements_x.flatten(), elements_y.flatten()):
-            if np.sqrt(i**2 + j**2) <= self.diameter/2:
+            if np.sqrt(i**2 + j**2) <= self.diameter / 2:
                 self.elements_x = np.append(self.elements_x, i)
                 self.elements_y = np.append(self.elements_y, j)
 
     def set_ampl_distribution(self, *args):
         if len(args) == 1:
-            dist, = args
+            (dist,) = args
             self.ampl_distribution = dist(self.elements_x, self.elements_y)
         elif len(args) == 2:
             dist_x, dist_y = args
-            self.ampl_distribution = dist_x(
-                self.elements_x) * dist_y(self.elements_y)
+            self.ampl_distribution = dist_x(self.elements_x) * dist_y(self.elements_y)
 
     @property
     def Nx(self) -> int:
@@ -247,6 +243,7 @@ class RectangularRoundAntenna(AntennaBase):
 
 class HexagonalRoundAntenna(RectangularRoundAntenna):
     """Класс антенны с гексагональной сеткой и круглым раскрывом"""
+
     def __init__(self, diameter: float, ddelta: float, freq: float):
         """
 
