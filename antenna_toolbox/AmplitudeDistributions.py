@@ -7,7 +7,7 @@ def ampl_distribution_round(delta: float, n: int, a: float, E0: float = 1.0):
         return E0 * ((1 - delta) + delta * (1 - (x**2 + y**2) / a ** 2) ** n)
     return wrapped
 
-    
+
 def ampl_dist_uniform(E0: float = 1.0):
     def wrapped(x: npt.NDArray):
         return E0 * np.ones_like(x)
@@ -16,7 +16,7 @@ def ampl_dist_uniform(E0: float = 1.0):
 
 def ampl_dist_squared(t: float, a: float, E0: float = 1.0):
     def wrapped(x: npt.NDArray):
-        return E0 * (1 - (1 - t) *  (2 * x / a) ** 2)
+        return E0 * (1 - (1 - t) * (2 * x / a) ** 2)
     return wrapped
 
 

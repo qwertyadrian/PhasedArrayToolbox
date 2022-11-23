@@ -163,16 +163,13 @@ class HexagonalAntenna(RectangularAntenna):
 
         super().__init__(a, b, dx, dy, freq)
 
-        # self.elements_x[::2, :] *= ratio
         self.elements_x[::2, :] += self.ddelta / 2
 
 
-class HexagonalRoundAntenna(AntennaBase):
-    def __init__(self, diameter: float, ddelta: float, freq: float):
-        ratio = np.sqrt(3) / 2
-
-        self.dx = ddelta
-        self.dy = ratio * ddelta
+class RectangularRoundAntenna(AntennaBase):
+    def __init__(self, diameter: float, dx: float, dy: float, freq: float, ddelta: float = 0):
+        self.dx = dx
+        self.dy = dy
         self.diameter = diameter
         self.ddelta = ddelta
         self.frequency = freq
@@ -180,12 +177,6 @@ class HexagonalRoundAntenna(AntennaBase):
         N = max(self.Nx, self.Ny) + 1
         self._x = self.dx * np.linspace(-N / 2, N / 2, N)
         self._y = self.dy * np.linspace(-N / 2, N / 2, N)
-
-        # self.elements_x, self.elements_y = np.meshgrid(self._x, self._y)
-        # self.elements_x[::2, :] += self.ddelta / 2
-        #
-        # self.elements_x = self.elements_x.flatten()
-        # self.elements_y = self.elements_y.flatten()
 
         elements_x, elements_y = np.meshgrid(self._x, self._y)
         elements_x[::2, :] += self.ddelta / 2
@@ -198,13 +189,22 @@ class HexagonalRoundAntenna(AntennaBase):
                 self.elements_x = np.append(self.elements_x, i)
                 self.elements_y = np.append(self.elements_y, j)
 
+    def set_ampl_distribution(self, *args):
+        if len(args) == 1:
+            dist, = args
+            self.ampl_distribution = dist(self.elements_x, self.elements_y)
+        elif len(args) == 2:
+            dist_x, dist_y = args
+            self.ampl_distribution = dist_x(
+                self.elements_x) * dist_y(self.elements_y)
+
     @property
     def Nx(self) -> int:
         """Число элементов по оси X
 
         :rtype: int
         """
-        return int(np.ceil(self.diameter / (4 * self.ddelta)) * 4)
+        return int(np.ceil(self.diameter / (4 * self.dx)) * 4)
 
     @property
     def Ny(self) -> int:
@@ -213,3 +213,20 @@ class HexagonalRoundAntenna(AntennaBase):
         :rtype: int
         """
         return int(np.ceil(self.diameter / (4 * self.dy)) * 4)
+
+
+class HexagonalRoundAntenna(RectangularRoundAntenna):
+    def __init__(self, diameter: float, ddelta: float, freq: float):
+        ratio = np.sqrt(3) / 2
+
+        super().__init__(
+            diameter, dx=ddelta, dy=ratio * ddelta, freq=freq, ddelta=ddelta
+        )
+
+    @property
+    def Nx(self) -> int:
+        """Число элементов по оси X
+
+        :rtype: int
+        """
+        return int(np.ceil(self.diameter / (4 * self.ddelta)) * 4)
