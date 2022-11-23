@@ -306,4 +306,4 @@ class Ui_MainWindow(object):
         self.label_15.setText(_translate("MainWindow", "3."))
         self.label_21.setText(_translate("MainWindow", "Амплитудные распределения"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.man), _translate("MainWindow", "Справка"))
-from resources import resources
+from app.resources import resources
