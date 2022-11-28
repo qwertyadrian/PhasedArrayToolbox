@@ -115,10 +115,13 @@ line, = ax.plot(theta, ant.array_factor(theta, np.deg2rad(0), pd))
 
 def animate(i):
     
-    theta0 = 45 * np.sin(2*np.pi*i/100)
-    pd = ant.phase_distribution(np.deg2rad(theta0), 0)
+#     theta0 = 45 * np.sin(2*np.pi*i/100)
+    
+    pd = ant.phase_distribution(np.deg2rad(i), 0)
     line.set_ydata(ant.array_factor(theta, np.deg2rad(0), pd))  # update the data.
+    plt.savefig(f"result/Dn{i+50}.pdf")
     return line,
+
 
 ax.set_rmin(-30)
 ax.set_rticks(np.arange(-30,1,5))  # Less radial ticks
@@ -126,8 +129,8 @@ ax.set_rlabel_position(135)  # Move radial labels away from plotted line
 ax.grid(True)
 
 ani = animation.FuncAnimation(
-    fig, animate, interval=1, blit=True, save_count=50, frames=100)
+    fig, animate, interval=1, blit=True, save_count=50, frames=np.arange(-50,50))
 
-ani.save("DN_polar.gif", fps=144)
+# ani.save("DN_polar.gif", fps=144)
 
 plt.show()
