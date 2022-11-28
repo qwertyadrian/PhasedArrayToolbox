@@ -13,7 +13,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.theta_max = None
         # Сектор электрического сканирования (0-Симметричный, 1-Конический)
         self.sector = None
-        # Средняя частота рабочего диапозона, Гц
+        # Средняя частота рабочего диапазона, Гц
         self.f0 = None
         # Полоса рабочих частот, Гц
         self.delta_f = None
@@ -50,17 +50,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.dist_y_value.setEnabled(False)
         else:
             self.dist_y_value.setEnabled(True)
-        print(i)
 
     def set_dist_y(self, i):
         if i == 5:
             self.dist_x_value.setEnabled(False)
         else:
             self.dist_x_value.setEnabled(True)
-        print(i)
 
     def calculate(self):
-
         self.theta_max = self.theta_max_value.value()
         self.sector = self.sector_value.currentIndex()
         self.grid = self.grid_value.currentIndex()

@@ -285,11 +285,7 @@
        <attribute name="title">
         <string>ДН</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="QWidget" name="widget_2" native="true"/>
-        </item>
-       </layout>
+       <layout class="QVBoxLayout" name="verticalLayout_3"/>
       </widget>
       <widget class="QWidget" name="amplt_dist">
        <attribute name="title">
