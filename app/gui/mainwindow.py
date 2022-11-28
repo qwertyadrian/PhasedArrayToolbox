@@ -1,7 +1,9 @@
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow, QLabel
 from PyQt5.QtGui import QDoubleValidator
 
 from .window import Ui_MainWindow
+from .widgets import ParameterT, ParameterN, ParametersDeltaN
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -32,6 +34,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "y": {"t": None, "n": None},
             "r": {"d": None, "n": None},
         }
+
+        # Инициализация виджетов
+        self.params_t_x_widget = ParameterT()
+        self.params_t_y_widget = ParameterT()
+        self.params_n_x_widget = ParameterN()
+        self.params_n_y_widget = ParameterN()
+        self.params_delta_n_widget = ParametersDeltaN()
 
         # Проверка вводимых значений
         self.double_validator = QDoubleValidator(0, 1e12, 8)
