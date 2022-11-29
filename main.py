@@ -119,7 +119,7 @@ def animate(i):
     
     pd = ant.phase_distribution(np.deg2rad(i), 0)
     line.set_ydata(ant.array_factor(theta, np.deg2rad(0), pd))  # update the data.
-    plt.savefig(f"result/Dn{i+50}.pdf")
+    #plt.savefig(f"result/Dn{i+50}.pdf")
     return line,
 
 

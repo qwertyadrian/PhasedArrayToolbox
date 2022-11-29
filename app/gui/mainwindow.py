@@ -57,14 +57,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def set_dist_x(self, i):
         if i == 5:
             self.dist_y_value.setEnabled(False)
+            self.sector_value.setCurrentIndex(1)
+            self.sector_value.setEnabled(False)
         else:
             self.dist_y_value.setEnabled(True)
+            self.sector_value.setEnabled(True)
 
     def set_dist_y(self, i):
         if i == 5:
             self.dist_x_value.setEnabled(False)
+            self.sector_value.setCurrentIndex(1)
+            self.sector_value.setEnabled(False)
         else:
             self.dist_x_value.setEnabled(True)
+            self.sector_value.setEnabled(True)
 
     def calculate(self):
         self.theta_max = self.theta_max_value.value()
