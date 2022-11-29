@@ -1,9 +1,8 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
-    QMainWindow, QLabel, QSpacerItem, QSizePolicy, QMessageBox
-)
+from PyQt5.QtWidgets import QMainWindow, QLabel, QSpacerItem, QSizePolicy, QMessageBox
 from PyQt5.QtGui import QDoubleValidator
 
+from ..utils.graph import graph
 from .window import Ui_MainWindow
 from .widgets import ParameterT, ParameterN, ParametersDeltaN
 
@@ -26,7 +25,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Тип распределений поля в плоскостях x, y
         self.dist_type = dict(x=None, y=None)
         # Направление сканирования, град.
-        self.direction = dict(theta0=None, phi0=None)
+        self.direction = dict(theta=None, phi=None)
         # Размер антенны, м (для прямоугольной-сторона квадрата, для круглой диаметр)
         self.size = None
         # Частота сигнала, Гц
@@ -34,7 +33,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dist = {
             "x": {"t": None, "n": None},
             "y": {"t": None, "n": None},
-            "r": {"d": None, "n": None},
+            "r": {"delta": None, "n": None},
         }
 
         # Инициализация виджетов
@@ -154,29 +153,63 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.direction.update(
             dict(
-                theta0=self.theta_0_value.value(),
-                phi0=self.phi_0_value.value(),
+                theta=self.theta_0_value.value(),
+                phi=self.phi_0_value.value(),
             )
         )
 
-        self.check_values()
+        self.dist.update(
+            {
+                "x": {
+                    "t": self.t_x_widget.t_value.value(),
+                    "n": self.n_x_widget.n_value.value(),
+                },
+                "y": {
+                    "t": self.t_y_widget.t_value.value(),
+                    "n": self.n_y_widget.n_value.value(),
+                },
+                "r": {
+                    "delta": self.delta_n_widget.delta_value.value(),
+                    "n": self.delta_n_widget.n_value.value(),
+                },
+            }
+        )
+
+        if self.check_values():
+            graph(
+                theta_max=self.theta_max,
+                sector=self.sector,
+                grid=self.grid,
+                dist_type=self.dist_type,
+                direction=self.direction,
+                f0=self.f0,
+                delta_f=self.delta_f,
+                size=self.size,
+                f=self.f,
+                dist=self.dist,
+            )
 
     def check_values(self):
         tmp = (
-            self.f0_value.text(), self.delta_f_value.text(),
-            self.size_value.text(), self.f_value.text(),
+            self.f0_value.text(),
+            self.delta_f_value.text(),
+            self.size_value.text(),
+            self.f_value.text(),
         )
         for i in tmp:
             if not i:
-                QMessageBox.warning(self, "Предупреждение", "Не все параметры были указаны")
+                QMessageBox.warning(
+                    self, "Предупреждение", "Не все параметры были указаны"
+                )
                 break
             elif i.startswith("e") or i.endswith("-"):
-                QMessageBox.warning(self, "Предупреждение",
-                                    "Один из параметров был указан неверно")
+                QMessageBox.warning(
+                    self, "Предупреждение", "Один из параметров был указан неверно"
+                )
                 break
         else:
             self.f0 = float(self.f0_value.text().replace(",", "."))
             self.delta_f = float(self.delta_f_value.text().replace(",", "."))
             self.size = float(self.size_value.text().replace(",", "."))
             self.f = float(self.f_value.text().replace(",", "."))
-
+            return True
