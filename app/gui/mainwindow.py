@@ -1,5 +1,7 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow, QLabel, QSpacerItem, QSizePolicy
+from PyQt5.QtWidgets import (
+    QMainWindow, QLabel, QSpacerItem, QSizePolicy, QMessageBox
+)
 from PyQt5.QtGui import QDoubleValidator
 
 from .window import Ui_MainWindow
@@ -157,7 +159,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
         )
 
-        self.f0 = float(self.f0_value.text().replace(",", "."))
-        self.delta_f = float(self.delta_f_value.text().replace(",", "."))
-        self.size = float(self.size_value.text().replace(",", "."))
-        self.f = float(self.f_value.text().replace(",", "."))
+        self.check_values()
+
+    def check_values(self):
+        tmp = (
+            self.f0_value.text(), self.delta_f_value.text(),
+            self.size_value.text(), self.f_value.text(),
+        )
+        for i in tmp:
+            if not i:
+                QMessageBox.warning(self, "Предупреждение", "Не все параметры были указаны")
+                break
+            elif i.startswith("e") or i.endswith("-"):
+                QMessageBox.warning(self, "Предупреждение",
+                                    "Один из параметров был указан неверно")
+                break
+        else:
+            self.f0 = float(self.f0_value.text().replace(",", "."))
+            self.delta_f = float(self.delta_f_value.text().replace(",", "."))
+            self.size = float(self.size_value.text().replace(",", "."))
+            self.f = float(self.f_value.text().replace(",", "."))
+
