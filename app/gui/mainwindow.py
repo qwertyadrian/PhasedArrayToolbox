@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow, QLabel
+from PyQt5.QtWidgets import QMainWindow, QLabel, QSpacerItem, QSizePolicy
 from PyQt5.QtGui import QDoubleValidator
 
 from .window import Ui_MainWindow
@@ -36,15 +36,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         }
 
         # Инициализация виджетов
-        self.params_t_x_widget = ParameterT()
-        self.params_t_y_widget = ParameterT()
-        self.params_n_x_widget = ParameterN()
-        self.params_n_y_widget = ParameterN()
-        self.params_delta_n_widget = ParametersDeltaN()
+        self.t_x_widget = ParameterT()
+        self.t_y_widget = ParameterT()
+        self.n_x_widget = ParameterN()
+        self.n_y_widget = ParameterN()
+        self.delta_n_widget = ParametersDeltaN()
 
         # Проверка вводимых значений
         self.double_validator = QDoubleValidator(0, 1e12, 8)
+        # Создание текстовых меток
+        self.dist_x_label = QLabel("Параметры распределения поля в плоскости X:")
+        self.dist_y_label = QLabel("Параметры распределения поля в плоскости Y:")
+        self.dist_r_label = QLabel("Параметры распределения поля в круглом раскрыве:")
+        self.dist_r_label.hide()
+        # Вставляем виджеты в компоновщик
+        self.dist_layout.addWidget(self.dist_x_label, 0, 0, Qt.AlignHCenter)
+        self.dist_layout.addWidget(self.dist_y_label, 0, 1, Qt.AlignHCenter)
+        self.dist_layout.addWidget(self.dist_r_label, 0, 0, Qt.AlignHCenter)
+        self.dist_layout.addWidget(self.t_x_widget, 1, 0)
+        self.dist_layout.addWidget(self.n_x_widget, 1, 0)
+        self.dist_layout.addWidget(self.delta_n_widget, 1, 0)
+        self.dist_layout.addWidget(self.t_y_widget, 1, 1)
+        self.dist_layout.addWidget(self.n_y_widget, 1, 1)
+        # Добавляем вертикальные пробелы
+        spacerItem = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.dist_layout.addItem(spacerItem, 2, 0, 1, 1)
+        spacerItem1 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.dist_layout.addItem(spacerItem1, 2, 1, 1, 1)
 
+        # Применяем валидаторы к полям ввода значений
         self.f0_value.setValidator(self.double_validator)
         self.delta_f_value.setValidator(self.double_validator)
         self.size_value.setValidator(self.double_validator)
@@ -56,19 +76,67 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_dist_x(self, i):
         if i == 5:
+            # TODO: убрать код условия в отдельную функцию?
             self.dist_y_value.setEnabled(False)
             self.sector_value.setCurrentIndex(1)
             self.sector_value.setEnabled(False)
+            self.dist_x_label.hide()
+            self.dist_y_label.hide()
+            self.dist_r_label.show()
+            self.t_x_widget.hide()
+            self.n_x_widget.hide()
+            self.t_y_widget.hide()
+            self.n_y_widget.hide()
+            self.delta_n_widget.show()
         else:
+            if i == 0:
+                self.t_x_widget.hide()
+                self.delta_n_widget.hide()
+                self.n_x_widget.hide()
+            elif i == 4:
+                self.t_x_widget.hide()
+                self.delta_n_widget.hide()
+                self.n_x_widget.show()
+            else:
+                self.n_x_widget.hide()
+                self.delta_n_widget.hide()
+                self.t_x_widget.show()
+            self.dist_x_label.show()
+            self.dist_y_label.show()
+            self.dist_r_label.hide()
             self.dist_y_value.setEnabled(True)
             self.sector_value.setEnabled(True)
 
     def set_dist_y(self, i):
         if i == 5:
+            # TODO: убрать код условия в отдельную функцию?
             self.dist_x_value.setEnabled(False)
             self.sector_value.setCurrentIndex(1)
             self.sector_value.setEnabled(False)
+            self.dist_x_label.hide()
+            self.dist_y_label.hide()
+            self.dist_r_label.show()
+            self.t_x_widget.hide()
+            self.n_x_widget.hide()
+            self.t_y_widget.hide()
+            self.n_y_widget.hide()
+            self.delta_n_widget.show()
         else:
+            if i == 0:
+                self.t_y_widget.hide()
+                self.delta_n_widget.hide()
+                self.n_y_widget.hide()
+            elif i == 4:
+                self.t_y_widget.hide()
+                self.delta_n_widget.hide()
+                self.n_y_widget.show()
+            else:
+                self.n_y_widget.hide()
+                self.delta_n_widget.hide()
+                self.t_y_widget.show()
+            self.dist_x_label.show()
+            self.dist_y_label.show()
+            self.dist_r_label.hide()
             self.dist_x_value.setEnabled(True)
             self.sector_value.setEnabled(True)
 
