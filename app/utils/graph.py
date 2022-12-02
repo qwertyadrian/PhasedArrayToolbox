@@ -27,11 +27,6 @@ def graph(
     f,
     dist,
 ):
-    # Длина волны в метрах
-    wavelength = 3e8 / f
-    # Волновое число
-    k = 2 * np.pi / wavelength
-
     dtheta = 0.1
     dphi = 0.1
 
@@ -57,27 +52,27 @@ def graph(
             b=size,
             dx=dx,
             dy=dy,
-            freq=f0,
+            freq=f,
         )
     elif sector == 0 and grid == 1:
         ant = HexagonalAntenna(
             a=size,
             b=size,
             ddelta=ddelta,
-            freq=f0,
+            freq=f,
         )
     elif sector == 1 and grid == 0:
         ant = RectangularRoundAntenna(
             diameter=size,
             dx=dx,
             dy=dy,
-            freq=f0,
+            freq=f,
         )
     else:
         ant = HexagonalRoundAntenna(
             diameter=size,
             ddelta=ddelta,
-            freq=f0,
+            freq=f,
         )
     direction = {k: np.deg2rad(v) for k, v in direction.items()}
 
@@ -89,8 +84,6 @@ def graph(
             choice_distribution(dist_type["y"], dist["y"], size),
         )
     pd = ant.phase_distribution(**direction)
-
-    #     F = ant.array_factor(theta, np.deg2rad(90), pd)
 
     plt.subplot(2, 1, 1)
     plt.plot(np.rad2deg(theta), ant.array_factor(theta, np.deg2rad(0), pd))
@@ -165,7 +158,7 @@ def graph(
     plt.show()
 
 
-def choice_distribution(index: int, dist: dict, size: float):
+def choice_distribution(index: int, dist: dict, size: float) -> callable:
     if index == 0:
         return ad.ampl_dist_uniform()
     elif index == 1:
