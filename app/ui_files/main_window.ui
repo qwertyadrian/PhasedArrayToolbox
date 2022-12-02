@@ -281,7 +281,7 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QWidget" name="widget" native="true"/>
+         <layout class="QVBoxLayout" name="vl_0"/>
         </item>
        </layout>
       </widget>
@@ -289,7 +289,11 @@
        <attribute name="title">
         <string>ДН</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3"/>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QVBoxLayout" name="vl_1"/>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="amplt_dist">
        <attribute name="title">
@@ -297,7 +301,7 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
-         <widget class="QWidget" name="widget_3" native="true"/>
+         <layout class="QVBoxLayout" name="vl_2"/>
         </item>
        </layout>
       </widget>
@@ -486,6 +490,21 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>theta_max_value</tabstop>
+  <tabstop>sector_value</tabstop>
+  <tabstop>f0_value</tabstop>
+  <tabstop>delta_f_value</tabstop>
+  <tabstop>grid_value</tabstop>
+  <tabstop>dist_x_value</tabstop>
+  <tabstop>dist_y_value</tabstop>
+  <tabstop>theta_0_value</tabstop>
+  <tabstop>phi_0_value</tabstop>
+  <tabstop>size_value</tabstop>
+  <tabstop>f_value</tabstop>
+  <tabstop>calc_value</tabstop>
+  <tabstop>tabWidget</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

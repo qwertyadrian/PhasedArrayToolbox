@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-# from matplotlib.backends.backend_qtagg import (
-#     FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-# from matplotlib.figure import Figure
+from matplotlib.backends.backend_qtagg import FigureCanvas
+from matplotlib.figure import Figure
+from matplotlib.colorbar import Colorbar
 
 from antenna_toolbox.PhasedArray import (
     RectangularAntenna,
@@ -13,6 +13,9 @@ from antenna_toolbox.PhasedArray import (
     RectangularRoundAntenna,
 )
 import antenna_toolbox.AmplitudeDistributions as ad
+
+
+plt.rcParams["font.size"] = "14"
 
 
 def graph(
@@ -27,12 +30,20 @@ def graph(
     f,
     dist,
 ):
-    dtheta = 0.1
-    dphi = 0.1
+    """Функция вычисляющая ДН и амплитудное распределение
 
-    theta = np.deg2rad(np.arange(-90, 90, dtheta))
-    phi = np.deg2rad(np.arange(0, 360, dphi))
-
+    :param theta_max: Максимальный угол отклонения луча
+    :param sector: Тип сектора (симметричный или конический)
+    :param grid: Сетка расположения элементов (гексагональная или прямоугольная)
+    :param dist_type: Тип распределения
+    :param direction: Направление сканирования
+    :param f0: Центральная частота
+    :param delta_f: Полоса рабочих частот
+    :param size: Размер антенны (сторона квадрата или диаметр раскрыва)
+    :param f: Рабочая частота
+    :param dist: Параметры распределения
+    :return: Холсты с графиками
+    """
     if grid == 0:
         dx = 0.9 * 3e8 / (f0 + delta_f / 2) / (1 + np.sin(np.deg2rad(theta_max)))
         dy = dx
@@ -85,46 +96,103 @@ def graph(
         )
     pd = ant.phase_distribution(**direction)
 
-    plt.subplot(2, 1, 1)
-    plt.plot(np.rad2deg(theta), ant.array_factor(theta, np.deg2rad(0), pd))
-    plt.ylim(-30)
+    # Расчет контурного графика
+    th = np.deg2rad(np.arange(91))
+    ph = np.deg2rad(np.arange(0, 362, 2))
 
-    plt.subplot(2, 1, 2)
-    plt.plot(np.rad2deg(theta), ant.array_factor(theta, np.deg2rad(90), pd))
-    plt.ylim(-30)
+    contour_map_canvas = FigureCanvas(Figure())
+    ax1, ax2 = contour_map_canvas.figure.subplots(1, 2, width_ratios=(0.95, 0.05))
+    cs = ax1.contourf(
+        np.rad2deg(ph), np.rad2deg(th),
+        ant.array_factor(th, ph, pd),
+        levels=np.arange(-30, 0.05, 1),
+        cmap=plt.get_cmap("Spectral_r"),
+    )
+    ax1.set_ylim(0, 90)
+    ax1.set_ylabel(r"$\theta \degree$")
+    ax1.set_xlabel(r"$\varphi \degree$")
+    ax1.grid()
+    Colorbar(ax2, ticks=np.arange(-30, 1, 2), mappable=cs)
 
-    plt.figure(2)
-    plt.scatter(ant.elements_x, ant.elements_y)
+    # График ДН
+    th = np.deg2rad(np.arange(-90, 90, 0.1))
 
-    fig_4, ax_4 = plt.subplots(subplot_kw={"projection": "3d"})
+    dn_canvas = FigureCanvas(Figure())
+    if not (direction["theta"] or direction["phi"]):
+        dn_canvas.figure.subplots_adjust(hspace=0.5)
+        ax1, ax2 = dn_canvas.figure.subplots(2, 1)
+        ax1.plot(np.rad2deg(th), ant.array_factor(th, 0, pd))
+        ax1.set_ylim(-30, 0)
+        ax1.grid(color="k", linewidth=1)
+        ax1.minorticks_on()
+        ax1.grid(which="minor", ls=":")
+        ax1.set_xlabel(r"$\theta \degree$")
+        ax1.set_ylabel(r"$F(\theta, \varphi=0\degree)$, дБ")
 
-    if len(ant.ampl_distribution.shape) == 2:
-        surf = ax_4.plot_surface(
-            ant.elements_x,
-            ant.elements_y,
-            ant.ampl_distribution,
-            rcount=ant.elements_x.size,
-            ccount=ant.elements_y.size,
-            cmap=plt.get_cmap("rainbow"),
-            linewidth=0,
-            antialiased=False,
-        )
+        ax2.plot(np.rad2deg(th), ant.array_factor(th, np.pi/2, pd))
+        ax2.set_ylim(-30, 0)
+        ax2.grid(color="k", linewidth=1)
+        ax2.minorticks_on()
+        ax2.grid(which="minor", ls=":")
+        ax2.set_xlabel(r"$\theta \degree$")
+        ax2.set_ylabel(r"$F(\theta, \varphi=90\degree)$, дБ")
     else:
-        surf = ax_4.plot_trisurf(
-            ant.elements_x,
-            ant.elements_y,
-            ant.ampl_distribution,
-            cmap=plt.get_cmap("rainbow"),
-            linewidth=0,
-            antialiased=False,
+        ax1 = dn_canvas.figure.subplots()
+        ax1.plot(
+            np.rad2deg(th),
+            ant.array_factor(th, np.deg2rad(direction["phi"]), pd)
         )
+        ax1.set_ylim(-30, 0)
+        ax1.grid(color="k", linewidth=1)
+        ax1.minorticks_on()
+        ax1.grid(which="minor", ls=":")
+        ax1.set_xlabel(r"$\theta \degree$")
+        ax1.set_ylabel(rf"$F(\theta, \varphi={direction['phi']}\degree)$, дБ")
 
-    fig_4.colorbar(surf, ticks=np.arange(0, 1.15, 0.05))
+    return contour_map_canvas, dn_canvas, dn_canvas
 
-    ax_4.scatter(ant.elements_x, ant.elements_y, 0)
-    ax_4.set_xlabel("$x$, м")
-    ax_4.set_ylabel("$Y$, м")
-    ax_4.set_zlabel("$A$, В/м")
+    # plt.figure(2)
+    # plt.scatter(ant.elements_x, ant.elements_y)
+    #
+    # fig_4, ax_4 = plt.subplots(subplot_kw={"projection": "3d"})
+    #
+    # if len(ant.ampl_distribution.shape) == 2:
+    #     surf = ax_4.plot_surface(
+    #         ant.elements_x,
+    #         ant.elements_y,
+    #         ant.ampl_distribution,
+    #         rcount=ant.elements_x.size,
+    #         ccount=ant.elements_y.size,
+    #         cmap=plt.get_cmap("rainbow"),
+    #         linewidth=0,
+    #         antialiased=False,
+    #     )
+    # else:
+    #     surf = ax_4.plot_trisurf(
+    #         ant.elements_x,
+    #         ant.elements_y,
+    #         ant.ampl_distribution,
+    #         cmap=plt.get_cmap("rainbow"),
+    #         linewidth=0,
+    #         antialiased=False,
+    #     )
+    #
+    # fig_4.colorbar(surf, ticks=np.arange(0, 1.15, 0.05))
+    #
+    # ax_4.scatter(ant.elements_x, ant.elements_y, 0)
+    # ax_4.set_xlabel("$x$, м")
+    # ax_4.set_ylabel("$Y$, м")
+    # ax_4.set_zlabel("$A$, В/м")
+
+    # contour_map_canvas = FigureCanvas(Figure())
+    # ax1, ax2 = contour_map_canvas.figure.subplots(2, 1)
+    # t = np.linspace(0, 10, 101)
+    # ax1.plot(t, np.sin(t))
+    # ax1.grid()
+    # ax2.plot(t, t**2)
+    # ax2.grid()
+
+    # return contour_map_canvas
 
     #     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
     # ax.plot(theta, ant.array_factor(theta, np.deg2rad(0), pd))
@@ -154,8 +222,6 @@ def graph(
     #
     #     ani = animation.FuncAnimation(
     #         fig, animate, interval=1, blit=True, save_count=50, frames=np.arange(-50,50))
-
-    plt.show()
 
 
 def choice_distribution(index: int, dist: dict, size: float) -> callable:

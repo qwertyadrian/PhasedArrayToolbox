@@ -1,6 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMainWindow, QLabel, QSpacerItem, QSizePolicy, QMessageBox
 from PyQt5.QtGui import QDoubleValidator
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 
 from ..utils.graph import graph
 from .window import Ui_MainWindow
@@ -176,7 +177,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
 
         if self.check_values():
-            graph(
+            canvases = graph(
                 theta_max=self.theta_max,
                 sector=self.sector,
                 grid=self.grid,
@@ -188,6 +189,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 f=self.f,
                 dist=self.dist,
             )
+            # Очистка вкладок от старых графиков
+            for i in reversed(range(self.vl_0.count())):
+                self.vl_0.itemAt(i).widget().setParent(None)
+            for i in reversed(range(self.vl_1.count())):
+                self.vl_1.itemAt(i).widget().setParent(None)
+            for i in reversed(range(self.vl_2.count())):
+                self.vl_2.itemAt(i).widget().setParent(None)
+
+            # Вставка полученных графиков
+            for i in range(3):
+                getattr(self, f"vl_{i}").addWidget(
+                    NavigationToolbar(canvases[i], self)
+                )
+                getattr(self, f"vl_{i}").addWidget(canvases[i])
 
     def check_values(self):
         tmp = (
