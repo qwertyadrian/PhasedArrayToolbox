@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMainWindow, QLabel, QSpacerItem, QSizePolicy, QMessageBox
-from PyQt5.QtGui import QDoubleValidator
+from PyQt5.QtGui import QDoubleValidator, QMovie
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 
 from ..utils.graph import graph
@@ -36,6 +36,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "y": {"t": None, "n": None},
             "r": {"delta": None, "n": None},
         }
+        self.ani_file = None
 
         # Инициализация виджетов
         self.t_x_widget = ParameterT()
@@ -188,19 +189,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 size=self.size,
                 f=self.f,
                 dist=self.dist,
+                calc_animation=self.scan_cb.isChecked(),
             )
-            # Очистка вкладок от старых графиков
-            for i in reversed(range(self.vl_0.count())):
-                self.vl_0.itemAt(i).widget().setParent(None)
-            for i in reversed(range(self.vl_1.count())):
-                self.vl_1.itemAt(i).widget().setParent(None)
-            for i in reversed(range(self.vl_2.count())):
-                self.vl_2.itemAt(i).widget().setParent(None)
 
+            self.scan_label.setMovie(QMovie())
             # Вставка полученных графиков
             for i in range(3):
+                # Очистка вкладок от старых графиков
+                for j in reversed(range(getattr(self, f"vl_{i}").count())):
+                    getattr(self, f"vl_{i}").itemAt(j).widget().setParent(None)
                 getattr(self, f"vl_{i}").addWidget(NavigationToolbar(canvases[i], self))
                 getattr(self, f"vl_{i}").addWidget(canvases[i])
+            if self.scan_cb.isChecked():
+                self.ani_file = canvases[-1]
+                movie = QMovie(self.ani_file.name)
+                self.scan_label.setMovie(movie)
+                movie.start()
 
     def check_values(self):
         tmp = (
@@ -215,7 +219,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self, "Предупреждение", "Не все параметры были указаны"
                 )
                 break
-            elif i.startswith("e") or i.endswith("-"):
+            elif i.startswith("e") or i.endswith("-") or i.endswith("e"):
                 QMessageBox.warning(
                     self, "Предупреждение", "Один из параметров был указан неверно"
                 )

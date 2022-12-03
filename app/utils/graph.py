@@ -1,3 +1,5 @@
+from tempfile import NamedTemporaryFile
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -29,6 +31,7 @@ def graph(
     size,
     f,
     dist,
+    calc_animation=False,
 ):
     """Функция вычисляющая ДН и амплитудное распределение
 
@@ -42,6 +45,7 @@ def graph(
     :param size: Размер антенны (сторона квадрата или диаметр раскрыва)
     :param f: Рабочая частота
     :param dist: Параметры распределения
+    :param calc_animation: Нужно ли считать анимацию
     :return: Холсты с графиками
     """
     if grid == 0:
@@ -183,25 +187,51 @@ def graph(
     if all(dist_type.values()):
         Colorbar(ax2, ticks=np.arange(0, 1.1, 0.1), mappable=surf)
 
-    return contour_map_canvas, dn_canvas, dist_canvas
+    ani_file = None
+    if calc_animation:
+        th = np.deg2rad(np.arange(-90, 90, 0.25))
 
-    # fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
-    # ax.plot(theta, ant.array_factor(theta, np.deg2rad(0), pd))
-    # ax.set_rmin(-30)
-    # ax.set_rticks(np.arange(-30,1,5))  # Less radial ticks
-    # ax.set_rlabel_position(135)  # Move radial labels away from plotted line
-    # ax.grid(True)
+        scan_fig = Figure(
+            figsize=(6.4*1.2, 4.8*1.2)
+        )
+        scan_fig.subplots_adjust(top=0.935, bottom=0.055, left=0, right=1)
+        # scan_fig.tight_layout()
+        scan_canvas = FigureCanvas(scan_fig)
+        ax1 = scan_canvas.figure.subplots(subplot_kw={'projection': 'polar'})
+        line_, = ax1.plot(th, ant.array_factor(th, 0, pd))
+        line1_ = ax1.axvline(0, color="red")
+        ax1.set_rmin(-30)
+        ax1.set_rticks(np.arange(-30, 1, 5))  # Less radial ticks
+        ax1.set_thetagrids(np.arange(-90, 100, 10))
+        ax1.set_thetamin(-90)
+        ax1.set_thetamax(90)
+        ax1.set_rlabel_position(135)  # Move radial labels away from plotted line
+        ax1.grid(True)
+        ax1.set_theta_zero_location('N')
 
-    # def animate(i):
-    #   theta0 = 45 * np.sin(2*np.pi*i/100)
-    #   pd = ant.phase_distribution(np.deg2rad(i), 0)
-    #   line.set_ydata(ant.array_factor(theta, np.deg2rad(0), pd))  # update the data.
-    #   #plt.savefig(f"result/Dn{i+50}.pdf")
-    #   return line,
+        def animate(i, lines, theta, antenna):
+            theta0 = 4 * np.pi / 9 * np.sin(2 * np.pi * i / 150)
+            pd = antenna.phase_distribution(theta0, 0)
+            lines[0].set_ydata(
+                ant.array_factor(theta, 0, pd)
+            )  # update the data.
+            lines[1].set_xdata(theta0)
+            return lines
 
-    # ani = animation.FuncAnimation(
-    #     fig, animate, interval=1, blit=True, save_count=50,
-    #     frames=np.arange(-50,50))
+        def progress(current_frame: int, total_frames: int):
+            print(f"Saving animation: {current_frame+1} of {total_frames}")
+
+        ani = animation.FuncAnimation(
+            scan_fig,
+            animate,
+            interval=100,
+            fargs=((line_, line1_), th, ant),
+            frames=150,
+        )
+        ani_file = NamedTemporaryFile(delete=False, suffix=".gif")
+        ani.save(ani_file.name, progress_callback=progress)
+
+    return contour_map_canvas, dn_canvas, dist_canvas, ani_file
 
 
 def choice_distribution(index: int, dist: dict, size: float) -> callable:
