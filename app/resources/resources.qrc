@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="root">
+    <file>img/delta.svg</file>
+    <file>img/equation1.svg</file>
+    <file>img/equation2.svg</file>
+    <file>img/equation3.svg</file>
+    <file>img/equation4.svg</file>
+    <file>img/equation5.svg</file>
+    <file>img/equation6.svg</file>
+  </qresource>
+</RCC>

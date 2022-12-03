@@ -142,7 +142,7 @@ class RectangularAntenna(AntennaBase):
         :param b: Размер антенны по оси Y
         :param dx: Шаг решетки по оси X
         :param dy: Шаг решетки по оси Y
-        :param freq: Резонансная частота
+        :param freq: Рабочая частота
         """
         self.a = a
         self.b = b
@@ -167,7 +167,7 @@ class HexagonalAntenna(RectangularAntenna):
         :param a: Размер антенны по оси X
         :param b: Размер антенны по оси Y
         :param ddelta: Расстояние между элементами
-        :param freq: Резонансная частота
+        :param freq: Рабочая частота
         """
 
         ratio = np.sqrt(3) / 2
@@ -192,8 +192,8 @@ class RectangularRoundAntenna(AntennaBase):
         :param diameter: Диаметр раскрыва антенны
         :param dx: Шаг сетки по оси X
         :param dy: Шаг сетки по оси Y
-        :param freq: Резонансная частота
-        :param ddelta:
+        :param freq: Рабочая частота
+        :param ddelta: Расстояние между соседними элементами в решетке
         """
         self.dx = dx
         self.dy = dy
@@ -249,7 +249,7 @@ class HexagonalRoundAntenna(RectangularRoundAntenna):
 
         :param diameter: Диаметр раксрыва
         :param ddelta: Расстояние между элементами
-        :param freq: Резонансная частота
+        :param freq: Рабочая частота
         """
         ratio = np.sqrt(3) / 2
 
