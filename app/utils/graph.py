@@ -149,13 +149,7 @@ def graph(
             rf"$F(\theta, \varphi={np.rad2deg(direction['phi'])}\degree)$, дБ"
         )
 
-    # fig_4, ax_4 = plt.subplots(subplot_kw={"projection": "3d"})
-    # surf = ax_4.plot_surface(x, y, A, rcount=len(X), ccount=len(Y), cmap=plt.get_cmap("rainbow"), linewidth=0,
-    #                        antialiased=False)
-    # fig_4.colorbar(surf, ticks=np.arange(0, 1.15, 0.05))
-    # surf = ax_4.plot_wireframe(x, y, A)
-    # ax_4.scatter(x, y, 0)
-
+    # Расчет амплитудного распределения и сетки расположения излучателей
     dist_canvas = FigureCanvas(Figure())
     if not all(dist_type.values()):
         ax1 = dist_canvas.figure.subplots(subplot_kw={"projection": "3d"})
@@ -191,77 +185,23 @@ def graph(
 
     return contour_map_canvas, dn_canvas, dist_canvas
 
-    # plt.figure(2)
-    # plt.scatter(ant.elements_x, ant.elements_y)
-    #
-    # fig_4, ax_4 = plt.subplots(subplot_kw={"projection": "3d"})
-    #
-    # if len(ant.ampl_distribution.shape) == 2:
-    #     surf = ax_4.plot_surface(
-    #         ant.elements_x,
-    #         ant.elements_y,
-    #         ant.ampl_distribution,
-    #         rcount=ant.elements_x.size,
-    #         ccount=ant.elements_y.size,
-    #         cmap=plt.get_cmap("rainbow"),
-    #         linewidth=0,
-    #         antialiased=False,
-    #     )
-    # else:
-    #     surf = ax_4.plot_trisurf(
-    #         ant.elements_x,
-    #         ant.elements_y,
-    #         ant.ampl_distribution,
-    #         cmap=plt.get_cmap("rainbow"),
-    #         linewidth=0,
-    #         antialiased=False,
-    #     )
-    #
-    # fig_4.colorbar(surf, ticks=np.arange(0, 1.15, 0.05))
-    #
-    # ax_4.scatter(ant.elements_x, ant.elements_y, 0)
-    # ax_4.set_xlabel("$x$, м")
-    # ax_4.set_ylabel("$Y$, м")
-    # ax_4.set_zlabel("$A$, В/м")
-
-    # contour_map_canvas = FigureCanvas(Figure())
-    # ax1, ax2 = contour_map_canvas.figure.subplots(2, 1)
-    # t = np.linspace(0, 10, 101)
-    # ax1.plot(t, np.sin(t))
-    # ax1.grid()
-    # ax2.plot(t, t**2)
-    # ax2.grid()
-
-    # return contour_map_canvas
-
-    #     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+    # fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
     # ax.plot(theta, ant.array_factor(theta, np.deg2rad(0), pd))
     # ax.set_rmin(-30)
     # ax.set_rticks(np.arange(-30,1,5))  # Less radial ticks
     # ax.set_rlabel_position(135)  # Move radial labels away from plotted line
     # ax.grid(True)
 
-    # x = np.arange(0, 2*np.pi, 0.01)
-    #     line, = ax.plot(theta, ant.array_factor(theta, np.deg2rad(0), pd))
-    #
-    #
-    #     def animate(i):
-    #
-    #     #     theta0 = 45 * np.sin(2*np.pi*i/100)
-    #
-    #         pd = ant.phase_distribution(np.deg2rad(i), 0)
-    #         line.set_ydata(ant.array_factor(theta, np.deg2rad(0), pd))  # update the data.
-    #         #plt.savefig(f"result/Dn{i+50}.pdf")
-    #         return line,
-    #
-    #
-    #     ax.set_rmin(-30)
-    #     ax.set_rticks(np.arange(-30,1,5))  # Less radial ticks
-    #     ax.set_rlabel_position(135)  # Move radial labels away from plotted line
-    #     ax.grid(True)
-    #
-    #     ani = animation.FuncAnimation(
-    #         fig, animate, interval=1, blit=True, save_count=50, frames=np.arange(-50,50))
+    # def animate(i):
+    #   theta0 = 45 * np.sin(2*np.pi*i/100)
+    #   pd = ant.phase_distribution(np.deg2rad(i), 0)
+    #   line.set_ydata(ant.array_factor(theta, np.deg2rad(0), pd))  # update the data.
+    #   #plt.savefig(f"result/Dn{i+50}.pdf")
+    #   return line,
+
+    # ani = animation.FuncAnimation(
+    #     fig, animate, interval=1, blit=True, save_count=50,
+    #     frames=np.arange(-50,50))
 
 
 def choice_distribution(index: int, dist: dict, size: float) -> callable:
