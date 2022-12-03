@@ -199,9 +199,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             # Вставка полученных графиков
             for i in range(3):
-                getattr(self, f"vl_{i}").addWidget(
-                    NavigationToolbar(canvases[i], self)
-                )
+                getattr(self, f"vl_{i}").addWidget(NavigationToolbar(canvases[i], self))
                 getattr(self, f"vl_{i}").addWidget(canvases[i])
 
     def check_values(self):

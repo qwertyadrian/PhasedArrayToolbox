@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets
 
 from app.gui.mainwindow import MainWindow
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
     window.show()

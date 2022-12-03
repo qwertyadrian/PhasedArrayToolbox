@@ -103,7 +103,8 @@ def graph(
     contour_map_canvas = FigureCanvas(Figure())
     ax1, ax2 = contour_map_canvas.figure.subplots(1, 2, width_ratios=(0.95, 0.05))
     cs = ax1.contourf(
-        np.rad2deg(ph), np.rad2deg(th),
+        np.rad2deg(ph),
+        np.rad2deg(th),
         ant.array_factor(th, ph, pd),
         levels=np.arange(-30, 0.05, 1),
         cmap=plt.get_cmap("Spectral_r"),
@@ -129,7 +130,7 @@ def graph(
         ax1.set_xlabel(r"$\theta \degree$")
         ax1.set_ylabel(r"$F(\theta, \varphi=0\degree)$, дБ")
 
-        ax2.plot(np.rad2deg(th), ant.array_factor(th, np.pi/2, pd))
+        ax2.plot(np.rad2deg(th), ant.array_factor(th, np.pi / 2, pd))
         ax2.set_ylim(-30, 0)
         ax2.grid(color="k", linewidth=1)
         ax2.minorticks_on()
@@ -138,18 +139,57 @@ def graph(
         ax2.set_ylabel(r"$F(\theta, \varphi=90\degree)$, дБ")
     else:
         ax1 = dn_canvas.figure.subplots()
-        ax1.plot(
-            np.rad2deg(th),
-            ant.array_factor(th, np.deg2rad(direction["phi"]), pd)
-        )
+        ax1.plot(np.rad2deg(th), ant.array_factor(th, direction["phi"], pd))
         ax1.set_ylim(-30, 0)
         ax1.grid(color="k", linewidth=1)
         ax1.minorticks_on()
         ax1.grid(which="minor", ls=":")
         ax1.set_xlabel(r"$\theta \degree$")
-        ax1.set_ylabel(rf"$F(\theta, \varphi={direction['phi']}\degree)$, дБ")
+        ax1.set_ylabel(
+            rf"$F(\theta, \varphi={np.rad2deg(direction['phi'])}\degree)$, дБ"
+        )
 
-    return contour_map_canvas, dn_canvas, dn_canvas
+    # fig_4, ax_4 = plt.subplots(subplot_kw={"projection": "3d"})
+    # surf = ax_4.plot_surface(x, y, A, rcount=len(X), ccount=len(Y), cmap=plt.get_cmap("rainbow"), linewidth=0,
+    #                        antialiased=False)
+    # fig_4.colorbar(surf, ticks=np.arange(0, 1.15, 0.05))
+    # surf = ax_4.plot_wireframe(x, y, A)
+    # ax_4.scatter(x, y, 0)
+
+    dist_canvas = FigureCanvas(Figure())
+    if not all(dist_type.values()):
+        ax1 = dist_canvas.figure.subplots(subplot_kw={"projection": "3d"})
+    else:
+        ax1, ax2 = dist_canvas.figure.subplots(1, 2, width_ratios=(0.95, 0.05))
+        ax1 = dist_canvas.figure.subplots(subplot_kw={"projection": "3d"})
+    if len(ant.ampl_distribution.shape) == 2:
+        surf = ax1.plot_surface(
+            ant.elements_x,
+            ant.elements_y,
+            ant.ampl_distribution,
+            rcount=ant.elements_x.size,
+            ccount=ant.elements_y.size,
+            cmap=plt.get_cmap("rainbow"),
+            linewidth=0,
+            antialiased=False,
+        )
+    else:
+        surf = ax1.plot_trisurf(
+            ant.elements_x,
+            ant.elements_y,
+            ant.ampl_distribution,
+            cmap=plt.get_cmap("rainbow"),
+            linewidth=0,
+            antialiased=False,
+        )
+    ax1.scatter(ant.elements_x, ant.elements_y, 0)
+    ax1.set_xlabel(r"$x$, м")
+    ax1.set_ylabel(r"$Y$, м")
+    ax1.set_zlabel(r"$A$, В/м")
+    if all(dist_type.values()):
+        Colorbar(ax2, ticks=np.arange(0, 1.1, 0.1), mappable=surf)
+
+    return contour_map_canvas, dn_canvas, dist_canvas
 
     # plt.figure(2)
     # plt.scatter(ant.elements_x, ant.elements_y)
