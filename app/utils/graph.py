@@ -215,7 +215,7 @@ def graph(
         ax1.set_theta_zero_location("N")
 
         def animate(i, lines, theta, antenna):
-            theta0 = 4 * np.pi / 9 * np.sin(2 * np.pi * i / 150)
+            theta0 = np.pi / 2 * np.sin(2 * np.pi * i / 150)
             pd = antenna.phase_distribution(theta0, 0)
             lines[0].set_ydata(ant.array_factor(theta, 0, pd))  # update the data.
             lines[1].set_xdata(theta0)

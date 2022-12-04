@@ -47,7 +47,7 @@ class AntennaBase(ABC):
         """
         F = np.abs(self._af(theta, phi, pd))
         if normalize:
-            F_max = np.max(np.abs(self._af(theta, phi, pd)))
+            F_max = np.max(F)
             F_norm = F / F_max
             if log:
                 return 20 * np.log10(F_norm)
