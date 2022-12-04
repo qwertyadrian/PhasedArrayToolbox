@@ -194,7 +194,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.scan_label.setMovie(QMovie())
             # Вставка полученных графиков
-            for i in range(3):
+            for i in range(4):
                 # Очистка вкладок от старых графиков
                 for j in reversed(range(getattr(self, f"vl_{i}").count())):
                     getattr(self, f"vl_{i}").itemAt(j).widget().setParent(None)

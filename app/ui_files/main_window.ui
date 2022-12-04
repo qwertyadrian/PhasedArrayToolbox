@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>825</width>
-    <height>744</height>
+    <height>746</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -282,6 +282,16 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Сетка</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_6">
+        <item>
+         <layout class="QVBoxLayout" name="vl_3"/>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="contour">
        <attribute name="title">
         <string>Контур</string>
@@ -318,7 +328,7 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_7">
         <item>
-         <layout class="QVBoxLayout" name="vl_3">
+         <layout class="QVBoxLayout" name="vl_4">
           <item>
            <widget class="QLabel" name="scan_label">
             <property name="sizePolicy">
@@ -544,7 +554,6 @@
  </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
-  <include location="../../../../.designer/resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

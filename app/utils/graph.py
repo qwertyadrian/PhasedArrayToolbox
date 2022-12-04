@@ -187,18 +187,23 @@ def graph(
     if all(dist_type.values()):
         Colorbar(ax2, ticks=np.arange(0, 1.1, 0.1), mappable=surf)
 
+    grid_canvas = FigureCanvas(Figure())
+    ax1 = grid_canvas.figure.subplots()
+    ax1.scatter(ant.elements_x, ant.elements_y, marker="s")
+    ax1.grid()
+    ax1.set_xlim(-ant.Nx * ant.dx / 2 - 2 * ant.dx, ant.Nx * ant.dx / 2 + 2 * ant.dx)
+    ax1.set_xlim(-ant.Ny * ant.dy / 2 - 2 * ant.dy, ant.Ny * ant.dy / 2 + 2 * ant.dy)
+
     ani_file = None
     if calc_animation:
         th = np.deg2rad(np.arange(-90, 90, 0.25))
 
-        scan_fig = Figure(
-            figsize=(6.4*1.2, 4.8*1.2)
-        )
+        scan_fig = Figure(figsize=(6.4 * 1.2, 4.8 * 1.2))
         scan_fig.subplots_adjust(top=0.935, bottom=0.055, left=0, right=1)
         # scan_fig.tight_layout()
         scan_canvas = FigureCanvas(scan_fig)
-        ax1 = scan_canvas.figure.subplots(subplot_kw={'projection': 'polar'})
-        line_, = ax1.plot(th, ant.array_factor(th, 0, pd))
+        ax1 = scan_canvas.figure.subplots(subplot_kw={"projection": "polar"})
+        (line_,) = ax1.plot(th, ant.array_factor(th, 0, pd))
         line1_ = ax1.axvline(0, color="red")
         ax1.set_rmin(-30)
         ax1.set_rticks(np.arange(-30, 1, 5))  # Less radial ticks
@@ -207,14 +212,12 @@ def graph(
         ax1.set_thetamax(90)
         ax1.set_rlabel_position(135)  # Move radial labels away from plotted line
         ax1.grid(True)
-        ax1.set_theta_zero_location('N')
+        ax1.set_theta_zero_location("N")
 
         def animate(i, lines, theta, antenna):
             theta0 = 4 * np.pi / 9 * np.sin(2 * np.pi * i / 150)
             pd = antenna.phase_distribution(theta0, 0)
-            lines[0].set_ydata(
-                ant.array_factor(theta, 0, pd)
-            )  # update the data.
+            lines[0].set_ydata(ant.array_factor(theta, 0, pd))  # update the data.
             lines[1].set_xdata(theta0)
             return lines
 
@@ -231,7 +234,7 @@ def graph(
         ani_file = NamedTemporaryFile(delete=False, suffix=".gif")
         ani.save(ani_file.name, progress_callback=progress)
 
-    return contour_map_canvas, dn_canvas, dist_canvas, ani_file
+    return contour_map_canvas, dn_canvas, dist_canvas, grid_canvas, ani_file
 
 
 def choice_distribution(index: int, dist: dict, size: float) -> callable:
