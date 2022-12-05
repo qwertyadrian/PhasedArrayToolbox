@@ -120,7 +120,7 @@ def graph(
     Colorbar(ax2, ticks=np.arange(-30, 1, 2), mappable=cs)
 
     # График ДН
-    th = np.deg2rad(np.arange(-90, 90, 0.1))
+    th = np.deg2rad(np.arange(-180, 180, 0.1))
 
     dn_canvas = FigureCanvas(Figure())
     if not (direction["theta"] or direction["phi"]):
@@ -183,7 +183,7 @@ def graph(
     ax1.scatter(ant.elements_x, ant.elements_y, 0)
     ax1.set_xlabel(r"$x$, м")
     ax1.set_ylabel(r"$Y$, м")
-    ax1.set_zlabel(r"$A$, В/м")
+    ax1.set_zlabel(r"$E$, В/м")
     if all(dist_type.values()):
         Colorbar(ax2, ticks=np.arange(0, 1.1, 0.1), mappable=surf)
 
