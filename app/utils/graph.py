@@ -109,7 +109,10 @@ def graph(
         opts=dict(epsabs=0.01, epsrel=0.01),
     )
     knd = 4 * np.pi / res[0]
-    knd_max = ((2 * np.pi * ant.diameter / 2) / ant.wavelength) ** 2
+    if hasattr(ant, "diameter"):
+        knd_max = ((2 * np.pi * ant.diameter / 2) / ant.wavelength) ** 2
+    else:
+        knd_max = 4 * np.pi * (size / ant.wavelength) ** 2
 
     results = (f"Шаг сетки по оси X, мм: {dx*1e3:.4}\n"
                f"Шаг сетки по оси Y, мм: {ant.dy*1e3:.4}\n")
