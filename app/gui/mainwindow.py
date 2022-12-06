@@ -200,6 +200,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     getattr(self, f"vl_{i}").itemAt(j).widget().setParent(None)
                 getattr(self, f"vl_{i}").addWidget(NavigationToolbar(canvases[i], self))
                 getattr(self, f"vl_{i}").addWidget(canvases[i])
+            QMessageBox.information(self, "Результаты расчета", canvases[-2])
             if self.scan_cb.isChecked():
                 self.ani_file = canvases[-1]
                 movie = QMovie(self.ani_file.name)

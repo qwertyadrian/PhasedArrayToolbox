@@ -7,6 +7,7 @@ import matplotlib.animation as animation
 from matplotlib.backends.backend_qtagg import FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.colorbar import Colorbar
+from scipy import integrate
 
 from antenna_toolbox.PhasedArray import (
     RectangularAntenna,
@@ -48,6 +49,7 @@ def graph(
     :param calc_animation: Нужно ли считать анимацию
     :return: Холсты с графиками
     """
+    dx = dy = ddelta = None
     if grid == 0:
         dx = 0.9 * 3e8 / (f0 + delta_f / 2) / (1 + np.sin(np.deg2rad(theta_max)))
         dy = dx
@@ -99,6 +101,27 @@ def graph(
             choice_distribution(dist_type["y"], dist["y"], size),
         )
     pd = ant.phase_distribution(**direction)
+
+    res = integrate.nquad(
+        lambda x, y: ant.array_factor(x, y, pd, log=False) ** 2 * np.sin(x),
+        ((0, np.pi / 2), (0, 2 * np.pi)),
+        opts=dict(epsabs=0.01, epsrel=0.01),
+    )
+    knd = 4 * np.pi / res[0]
+    knd_max = ((2 * np.pi * ant.diameter / 2) / ant.wavelength) ** 2
+
+    results = (f"Шаг сетки по оси X, мм: {ant.dx*10e3:.4}\n"
+               f"Шаг сетки по оси Y, мм: {ant.dy*10e3:.4}\n")
+    if ddelta:
+        results += (f"Расстояние между соседними "
+                    f"элементами в строке, мм: {ant.ddelta*10e3:.4}\n")
+    results += (f"Количество элементов по оси X: {ant.Nx}\n"
+                f"Количество элементов по оси Y: {ant.Ny}\n"
+                f"Общее число элементов: {ant.elements_x.size}\n"
+                f"КНД антенны в направлении главного лепестка: {knd:.4}\n"
+                f"Максимальный КНД плоского синфазного равноамплитудного "
+                f"раскрыва: {knd_max:.4}\n"
+                f"КИП антенны: {knd/knd_max:.4}")
 
     # Расчет контурного графика
     th = np.deg2rad(np.arange(91))
@@ -200,7 +223,6 @@ def graph(
 
         scan_fig = Figure(figsize=(6.4 * 1.2, 4.8 * 1.2))
         scan_fig.subplots_adjust(top=0.935, bottom=0.055, left=0, right=1)
-        # scan_fig.tight_layout()
         scan_canvas = FigureCanvas(scan_fig)
         ax1 = scan_canvas.figure.subplots(subplot_kw={"projection": "polar"})
         (line_,) = ax1.plot(th, ant.array_factor(th, 0, pd))
@@ -234,7 +256,7 @@ def graph(
         ani_file = NamedTemporaryFile(delete=False, suffix=".gif")
         ani.save(ani_file.name, progress_callback=progress)
 
-    return contour_map_canvas, dn_canvas, dist_canvas, grid_canvas, ani_file
+    return contour_map_canvas, dn_canvas, dist_canvas, grid_canvas, results, ani_file
 
 
 def choice_distribution(index: int, dist: dict, size: float) -> callable:
