@@ -49,7 +49,7 @@ def graph(
     :param calc_animation: Нужно ли считать анимацию
     :return: Холсты с графиками
     """
-    dx = dy = ddelta = None
+    dy = ddelta = None
     if grid == 0:
         dx = 0.9 * 3e8 / (f0 + delta_f / 2) / (1 + np.sin(np.deg2rad(theta_max)))
         dy = dx
@@ -62,6 +62,7 @@ def graph(
             / (f0 + delta_f / 2)
             / (1 + np.sin(np.deg2rad(theta_max)))
         )
+        dx = 1 / 2 * ddelta
 
     if sector == 0 and grid == 0:
         ant = RectangularAntenna(
@@ -110,11 +111,11 @@ def graph(
     knd = 4 * np.pi / res[0]
     knd_max = ((2 * np.pi * ant.diameter / 2) / ant.wavelength) ** 2
 
-    results = (f"Шаг сетки по оси X, мм: {ant.dx*10e3:.4}\n"
-               f"Шаг сетки по оси Y, мм: {ant.dy*10e3:.4}\n")
+    results = (f"Шаг сетки по оси X, мм: {dx*1e3:.4}\n"
+               f"Шаг сетки по оси Y, мм: {ant.dy*1e3:.4}\n")
     if ddelta:
         results += (f"Расстояние между соседними "
-                    f"элементами в строке, мм: {ant.ddelta*10e3:.4}\n")
+                    f"элементами в строке, мм: {ant.ddelta*1e3:.4}\n")
     results += (f"Количество элементов по оси X: {ant.Nx}\n"
                 f"Количество элементов по оси Y: {ant.Ny}\n"
                 f"Общее число элементов: {ant.elements_x.size}\n"
