@@ -14,6 +14,7 @@ class AntennaBase(ABC):
     b: float
     dx: float
     dy: float
+    __F_max: float
 
     def phase_distribution(self, theta: float, phi: float) -> npt.NDArray:
         """
@@ -22,11 +23,13 @@ class AntennaBase(ABC):
         :param phi: Угол сканирования в градусах в плоскости phi
         :return: Фазовое распределение
         """
-        return (
+        pd = (
             -self.k
             * (self.elements_x * np.cos(phi) + self.elements_y * np.sin(phi))
             * np.sin(theta)
         )
+        self.__F_max = self.array_factor(theta, phi, pd, normalize=False)
+        return pd
 
     def array_factor(
         self,
@@ -47,8 +50,7 @@ class AntennaBase(ABC):
         """
         F = np.abs(self._af(theta, phi, pd))
         if normalize:
-            F_max = np.max(F)
-            F_norm = F / F_max
+            F_norm = F / self.__F_max
             if log:
                 return 20 * np.log10(F_norm)
             else:
